@@ -17,7 +17,7 @@ namespace crudNetNet
         }
 
         //Esta clase representa una tabla en la bd, como solo hay una tabla ejemplos pues solo una clase
-        public DbSet<Ejemplo> EJEMPLOS { get; set; }
+        public DbSet<Ejemplo> Ejemplo{ get; set; }
 
     }
 

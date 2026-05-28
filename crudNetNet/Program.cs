@@ -1,10 +1,22 @@
+using crudNetNet;
 using crudNetNet.Components;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
+
+
+//Crea la conexión a la bd, enlaza la cadena de conexión que pusimos en appsettings.json, todo se une
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+{
+    options.UseMySql(
+        builder.Configuration.GetConnectionString("DefaultConnection"),
+        ServerVersion.AutoDetect(builder.Configuration.GetConnectionString("DefaultConnection"))
+    );
+});
 
 var app = builder.Build();
 
