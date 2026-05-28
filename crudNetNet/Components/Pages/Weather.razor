@@ -1,64 +1,258 @@
 ﻿@page "/weather"
-@attribute [StreamRendering]
+@using Microsoft.EntityFrameworkCore
+@inject ApplicationDbContext _context       //conexión con la bd a través de Context, lo que creamos antes lo uso ahora
+<PageTitle>EJEMPLOS</PageTitle>             //es decir, dame acceso a la bd
 
-<PageTitle>Weather</PageTitle>
+@* css normal  *@
+<style>
 
-<h1>Weather</h1>
-
-<p>This component demonstrates showing data.</p>
-
-@if (forecasts == null)
-{
-    <p><em>Loading...</em></p>
-}
-else
-{
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Date</th>
-                <th aria-label="Temperature in Celsius">Temp. (C)</th>
-                <th aria-label="Temperature in Fahrenheit">Temp. (F)</th>
-                <th>Summary</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var forecast in forecasts)
-            {
-                <tr>
-                    <td>@forecast.Date.ToShortDateString()</td>
-                    <td>@forecast.TemperatureC</td>
-                    <td>@forecast.TemperatureF</td>
-                    <td>@forecast.Summary</td>
-                </tr>
-            }
-        </tbody>
-    </table>
-}
-
-@code {
-    private WeatherForecast[]? forecasts;
-
-    protected override async Task OnInitializedAsync()
-    {
-        // Simulate asynchronous loading to demonstrate streaming rendering
-        await Task.Delay(500);
-
-        var startDate = DateOnly.FromDateTime(DateTime.Now);
-        var summaries = new[] { "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching" };
-        forecasts = Enumerable.Range(1, 5).Select(index => new WeatherForecast
-        {
-            Date = startDate.AddDays(index),
-            TemperatureC = Random.Shared.Next(-20, 55),
-            Summary = summaries[Random.Shared.Next(summaries.Length)]
-        }).ToArray();
+    body {
+        background-color: #f4f6f9;
     }
 
-    private class WeatherForecast
+    .container-formal {
+        max-width: 950px;
+        margin: 50px auto;
+        background: #ffffff;
+        padding: 35px;
+        border-radius: 10px;
+        box-shadow: 0 4px 18px rgba(0, 0, 0, 0.08);
+        border: 1px solid #e3e6ea;
+    }
+
+    .title-formal {
+        font-size: 28px;
+        font-weight: 600;
+        color: #0b3d91;
+        margin-bottom: 5px;
+    }
+
+    .subtitle-formal {
+        color: #6c757d;
+        margin-bottom: 30px;
+    }
+
+    .label-formal {
+        font-weight: 600;
+        color: #1f2d3d;
+        margin-top: 15px;
+        display: block;
+    }
+
+    .input-formal {
+        width: 100%;
+        padding: 10px 12px;
+        border-radius: 6px;
+        border: 1px solid #ced4da;
+        margin-top: 5px;
+        transition: border 0.2s, box-shadow 0.2s;
+        font-size: 14px;
+    }
+
+        .input-formal:focus {
+            border-color: #0b3d91;
+            box-shadow: 0 0 0 3px rgba(11, 61, 145, 0.15);
+            outline: none;
+        }
+
+    .btn-formal {
+        padding: 8px 18px;
+        border-radius: 6px;
+        border: none;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        margin-right: 10px;
+        transition: background 0.2s ease-in-out;
+    }
+
+    .btn-primary-formal {
+        background-color: #0b3d91;
+        color: white;
+    }
+
+        .btn-primary-formal:hover {
+            background-color: #082c6c;
+        }
+
+    .btn-edit-formal {
+        background-color: #1f4e79;
+        color: white;
+    }
+
+        .btn-edit-formal:hover {
+            background-color: #163a59;
+        }
+
+    .btn-delete-formal {
+        background-color: #6c757d;
+        color: white;
+    }
+
+        .btn-delete-formal:hover {
+            background-color: #545b62;
+        }
+
+    .btn-select-formal {
+        background-color: #e9ecef;
+        color: #0b3d91;
+        border: 1px solid #0b3d91;
+    }
+
+        .btn-select-formal:hover {
+            background-color: #0b3d91;
+            color: white;
+        }
+
+    .table-formal {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 30px;
+        font-size: 14px;
+    }
+
+        .table-formal thead {
+            background-color: #0b3d91;
+            color: white;
+        }
+
+        .table-formal th,
+        .table-formal td {
+            padding: 12px 15px;
+            border: 1px solid #dee2e6;
+            text-align: left;
+        }
+
+        .table-formal tbody tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+
+        .table-formal tbody tr:hover {
+            background-color: #eef2f7;
+        }
+
+    .loading {
+        color: #0b3d91;
+        font-weight: 500;
+    }
+
+    hr {
+        margin: 30px 0;
+        border: none;
+        border-top: 1px solid #dee2e6;
+    }
+
+</style>
+
+@* html normal *@
+<div class="container-formal">
+
+    <h1 class="title-formal">EJEMPLOS</h1>
+    <p class="subtitle-formal">Administración de registros</p>
+
+    <label class="label-formal">Nombre</label>
+    <input class="input-formal" type="text" @bind-value="ejemplo.Nombre" />
+
+    <label class="label-formal">Valor</label>
+    @* bind-value es html especial que blazor entiende *@
+    <input class="input-formal" type="number" @bind-value="ejemplo.Valor" />    
+
+    <div style="margin-top:20px;">
+        <button class="btn-formal btn-primary-formal" @onclick="Crear">Crear</button>
+
+        @if (ejemplo.Id > 0)
+        {
+            <button class="btn-formal btn-edit-formal" @onclick="Actualizar">Confirmar Editar</button>
+            <button class="btn-formal btn-delete-formal" @onclick="Eliminar">Eliminar</button>
+        }
+    </div>
+
+    <hr />
+
+    @if (ejemplos == null)
     {
-        public DateOnly Date { get; set; }
-        public int TemperatureC { get; set; }
-        public string? Summary { get; set; }
-        public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
+        <p class="loading"><em>Cargando registros...</em></p>
+    }
+    else
+    {
+        <table class="table-formal">
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Valor</th>
+                    <th style="width:140px;"></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var ejemplo in ejemplos)
+                {
+                    <tr>
+                        <td>@ejemplo.Nombre</td>
+                        <td>@ejemplo.Valor</td>
+                        <td>
+                            <button class="btn-formal btn-select-formal"
+                                    @onclick="() => Seleccionar(ejemplo)">
+                                Seleccionar
+                            </button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+
+</div>
+
+
+@* logica, empieza a partir de esta etiqueta, es c# *@
+@* Funciones del CRUD *@
+@code {
+    private Ejemplo[]? ejemplos;//Vector de objetos Ejemplo, llamado ejemplos, que es el que se va a mostrar en la tabla
+    Ejemplo ejemplo = new Ejemplo();//Un objeto de clase Ejemplo, llamado ejemplo, que se va a usar para crear, editar y eliminar registros
+    protected override async Task OnInitializedAsync()      //Funcion que inicializa el componente 
+    {
+        await Listar(); //Cuando se inicialice el componente, llama a la función Listar para cargar los datos
+    }
+
+    //Similar a la dinámica de crud de laravel o cualquier logica de otr framework
+    async Task Crear()
+    {
+        //Tomo lo que escribi en el form
+        _context.Ejemplo.Add(ejemplo);      //El .Ejemplo es del archivo ApplicationDbContext. La tabla Ejemplos de mi bd
+        await _context.SaveChangesAsync();  //lo guarda en la bd
+        var nuevo = new Ejemplo();  //limpio el form
+        ejemplo = nuevo;    //vuelvo a cargar la tabla
+        await Listar();     //llama a la función Listar para cargar los datos
+    }
+
+    async Task Listar()
+    {
+        //Vaya a la tabla "Ejemplo" de mi bd (declarada en el Context), y liste todo (ToArrayAsync())
+        ejemplos = await _context.Ejemplo.ToArrayAsync();
+    }
+
+
+    async Task Actualizar()
+    {
+        //Voy a la tabla Ejemplo, busco por el Id
+        var DbObjeto = await _context.Ejemplo.FindAsync(ejemplo.Id);
+        await _context.SaveChangesAsync();  //guarda los datos
+        var nuevo = new Ejemplo();  
+        ejemplo = nuevo;
+        await Listar();
+    }
+
+    async Task Eliminar()
+    {
+        _context.Ejemplo.Remove(ejemplo);   //Borra el registro seleccionado
+        await _context.SaveChangesAsync();  //guarda los cambios. SIEMPRE
+        var nuevo = new Ejemplo();  //Vacía. SIEMPRE
+        ejemplo = nuevo;
+        await Listar(); //Vueve a mostrar la tabla actualizada. SIEMPRE 
+    }
+
+    void Seleccionar(Ejemplo ejem)
+    {
+        ejemplo = ejem; //Click en seleccionar, el registro pasa al form
     }
 }
