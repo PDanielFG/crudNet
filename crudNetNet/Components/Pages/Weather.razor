@@ -151,15 +151,18 @@
     <p class="subtitle-formal">Administración de registros</p>
 
     <label class="label-formal">Nombre</label>
-    <input class="input-formal" type="text" @bind-value="ejemplo.Nombre" />
+    <input class="input-formal" type="text" @bind="ejemplo.Nombre" />
 
     <label class="label-formal">Valor</label>
     @* bind-value es html especial que blazor entiende *@
-    <input class="input-formal" type="number" @bind-value="ejemplo.Valor" />    
+    <input class="input-formal" type="number" @bind="ejemplo.Valor" />    
 
     <div style="margin-top:20px;">
-        <button class="btn-formal btn-primary-formal" @onclick="Crear">Crear</button>
-
+        <button type="button"
+                class="btn-formal btn-primary-formal"
+                @onclick="Crear">
+            Crear
+        </button>
         @if (ejemplo.Id > 0)
         {
             <button class="btn-formal btn-edit-formal" @onclick="Actualizar">Confirmar Editar</button>
@@ -218,7 +221,7 @@
     async Task Crear()
     {
         //Tomo lo que escribi en el form
-        _context.Ejemplo.Add(ejemplo);      //El .Ejemplo es del archivo ApplicationDbContext. La tabla Ejemplos de mi bd
+        _context.Ejemplos.Add(ejemplo);      //El .Ejemplo es del archivo ApplicationDbContext. La tabla Ejemplos de mi bd
         await _context.SaveChangesAsync();  //lo guarda en la bd
         var nuevo = new Ejemplo();  //limpio el form
         ejemplo = nuevo;    //vuelvo a cargar la tabla
@@ -228,14 +231,14 @@
     async Task Listar()
     {
         //Vaya a la tabla "Ejemplo" de mi bd (declarada en el Context), y liste todo (ToArrayAsync())
-        ejemplos = await _context.Ejemplo.ToArrayAsync();
+        ejemplos = await _context.Ejemplos.ToArrayAsync();
     }
 
 
     async Task Actualizar()
     {
         //Voy a la tabla Ejemplo, busco por el Id
-        var DbObjeto = await _context.Ejemplo.FindAsync(ejemplo.Id);
+        var DbObjeto = await _context.Ejemplos.FindAsync(ejemplo.Id);
         await _context.SaveChangesAsync();  //guarda los datos
         var nuevo = new Ejemplo();  
         ejemplo = nuevo;
@@ -244,7 +247,7 @@
 
     async Task Eliminar()
     {
-        _context.Ejemplo.Remove(ejemplo);   //Borra el registro seleccionado
+        _context.Ejemplos.Remove(ejemplo);   //Borra el registro seleccionado
         await _context.SaveChangesAsync();  //guarda los cambios. SIEMPRE
         var nuevo = new Ejemplo();  //Vacía. SIEMPRE
         ejemplo = nuevo;

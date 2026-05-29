@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace crudNetNet
 {
+    [Table("ejemplos")]
     public class Ejemplo
     {
         [Key]   //Clave primaria de la bd
